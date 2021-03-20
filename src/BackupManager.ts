@@ -1,7 +1,7 @@
 import { bedrockServer } from "bdsx";
 
 import BackupUtils from "./BackupUtils";
-import { IBackupSettings } from "./dtos/IBackupSettings";
+import { IBackupSettings } from "./IBackupSettings";
 
 export default class BackupManager {
     private worldName = "Unknown";
