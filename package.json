@@ -1,8 +1,10 @@
 {
     "bdsxPlugin": true,
     "name": "@bdsx/backup",
-    "version": "1.0.1",
+    "version": "1.0.7",
     "description": "Plugin to back up Bdsx Bedrock Minecraft servers",
+    "main": "index.js",
+    "types": "index.d.ts",
     "repository": {
         "type": "git",
         "url": "https://github.com/LastSandwich/bdsx-backup.git"
@@ -11,9 +13,9 @@
     "license": "MIT",
     "scripts": {
         "build": "tsc",
-        "format": "prettier --write \"src/**/*.(js|ts)\"",
-        "lint": "eslint src --ext .js,.ts",
-        "lint:fix": "eslint src --fix --ext .js,.ts",
+        "format": "prettier --write \"/*.(js|ts)\"",
+        "lint": "eslint . --ext .js,.ts",
+        "lint:fix": "eslint . --fix --ext .js,.ts",
         "test": "jest --config jest.config.js",
         "prepublishOnly": "npm test && npm run lint",
         "preversion": "npm run lint",
@@ -32,7 +34,7 @@
         "@types/unzipper": "^0.10.3",
         "@typescript-eslint/eslint-plugin": "^4.14.1",
         "@typescript-eslint/parser": "^4.14.1",
-        "bdsx": "file:../BDSX/bdsx",
+        "bdsx": "file:../bdsx/bdsx",
         "eslint": "^7.18.0",
         "eslint-config-prettier": "^7.2.0",
         "eslint-plugin-import": "^2.22.1",

@@ -4,14 +4,14 @@ import { Mock, It, Times, IMock } from "moq.ts";
 import * as unzipper from "unzipper";
 import waitForExpect from "wait-for-expect";
 
-import BackupManager from "../BackupManager";
-import BackupUtils from "../BackupUtils";
+import { BackupManager } from "./BackupManager";
+import { BackupUtils } from "./BackupUtils";
 
 describe("BackupManager", () => {
     const mockBedrockLogEvents = new Event<(log: string, color: any) => void>();
     const mockCommandOutputEvents = new Event<(command: string, originName: string) => void>();
     const mockExecuteCommandOnConsole = (command: string): void => {
-        // no action
+        console.log(command);
     };
 
     afterAll(async () => {

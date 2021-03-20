@@ -6,7 +6,7 @@ import { promisify } from "util";
 import * as AdmZip from "adm-zip";
 import * as ncp from "ncp";
 
-export default class BackupUtils {
+export class BackupUtils {
     public static async getWorldName(): Promise<string> {
         return BackupUtils.readFile("server.properties").then((data) => {
             const reg = /^level-name=(.+)/gim;
@@ -81,13 +81,13 @@ export default class BackupUtils {
         return directory;
     }
 
-    public static async removeTempDirectory(tempDirectory: string) {
+    public static async removeTempDirectory(tempDirectory: string): Promise<void> {
         await BackupUtils.removeDirectory(tempDirectory).catch((err) => {
             console.log(`Failed to remove ${tempDirectory}: ${err}`);
         });
     }
 
-    public static async truncate(file: string, tempDirectory: string) {
+    public static async truncate(file: string, tempDirectory: string): Promise<void> {
         const truncateFile = promisify(fs.truncate);
         const [filePath, bytesCount] = file.split(":");
         await truncateFile(`${tempDirectory}/${filePath}`, Number(bytesCount)).catch((err) => {
@@ -95,7 +95,7 @@ export default class BackupUtils {
         });
     }
 
-    public static async zipDirectory(tempDirectory: string, worldName: string, handleError: (error?: string) => void) {
+    public static async zipDirectory(tempDirectory: string, worldName: string, handleError: (error?: string) => void): Promise<void> {
         const destination = `backups/${basename(tempDirectory)}_${worldName}.zip`;
         await BackupUtils.ensureDirectoryExists("backups", handleError);
 
@@ -114,7 +114,7 @@ export default class BackupUtils {
         });
     }
 
-    public static async moveFiles(tempDirectory: string, worldName: string, handleError: any) {
+    public static async moveFiles(tempDirectory: string, worldName: string, handleError: any): Promise<void> {
         await new Promise<boolean>((resolve) => {
             ncp(
                 `worlds/${worldName}`,

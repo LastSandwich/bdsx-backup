@@ -121,5 +121,6 @@ dist
 .pnp.*
 
 /backups
-src/*.js
-src/*.js.map
+*.js
+*.js.map
+*.d.ts

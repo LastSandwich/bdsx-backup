@@ -1,4 +1,4 @@
-import BackupUtils from "../BackupUtils";
+import { BackupUtils } from "./BackupUtils";
 
 describe("Backup Utils", () => {
     const handleError = () => {
