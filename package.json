@@ -1,6 +1,6 @@
 {
     "bdsxPlugin": true,
-    "name": "bdsx-backup",
+    "name": "@bdsx/backup",
     "version": "1.0.1",
     "description": "Plugin to back up Bdsx Bedrock Minecraft servers",
     "repository": {
