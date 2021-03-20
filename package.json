@@ -1,7 +1,7 @@
 {
     "bdsxPlugin": true,
     "name": "@bdsx/backup",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "description": "Plugin to back up Bdsx Bedrock Minecraft servers",
     "main": "index.js",
     "types": "index.d.ts",
@@ -13,7 +13,7 @@
     "license": "MIT",
     "scripts": {
         "build": "tsc",
-        "format": "prettier --write \"/*.(js|ts)\"",
+        "format": "prettier --write \"*.(js|ts)\"",
         "lint": "eslint . --ext .js,.ts",
         "lint:fix": "eslint . --fix --ext .js,.ts",
         "test": "jest --config jest.config.js",
