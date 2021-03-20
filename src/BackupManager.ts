@@ -1,16 +1,7 @@
-import { bedrockServer } from "bdsx/launcher";
-import { command } from "bdsx/index";
-import BackupUtils from "./BackupUtils";
-import commandOutput = bedrockServer.commandOutput;
+import { bedrockServer } from "bdsx";
 
-export interface IBackupSettings {
-    backupOnStart?: boolean;
-    backupOnPlayerConnected?: boolean;
-    backupOnPlayerDisconnected?: boolean;
-    interval?: number;
-    minIntervalBetweenBackups?: number;
-    skipIfNoActivity?: boolean;
-}
+import BackupUtils from "./BackupUtils";
+import { IBackupSettings } from "./dtos/IBackupSettings";
 
 export default class BackupManager {
     private worldName = "Unknown";
@@ -19,13 +10,12 @@ export default class BackupManager {
     private lastBackup = new Date(0, 0, 0);
     private backupSettings: IBackupSettings = {};
 
-    constructor(private testOnly?: boolean) {
-    }
+    constructor(private bds: typeof bedrockServer, private testOnly?: boolean, private tempName?: string) {}
 
     public async init(settings: IBackupSettings): Promise<void> {
         this.backupSettings = settings;
         this.worldName = await BackupUtils.getWorldName();
-        if (!this.testOnly){
+        if (!this.testOnly) {
             await BackupUtils.removeDirectory("temp");
         }
 
@@ -58,29 +48,25 @@ export default class BackupManager {
 
         if (this.backupSettings.skipIfNoActivity) {
             if (this.activePlayerCount > 0 || this.runNextBackup) {
-                console.log("Save hold 1");
-                bedrockServer.executeCommandOnConsole("save hold");
+                console.log("Call save hold due to activity");
+                this.bds.executeCommandOnConsole("save hold");
             } else {
                 console.log("Skip backup - no activity");
             }
         } else {
-            console.log("Save hold 2");
-            bedrockServer.executeCommandOnConsole("save hold");
+            console.log("Call save hold (no activity)");
+            this.bds.executeCommandOnConsole("save hold");
         }
     }
 
-    public runNext(): void {
-        this.runNextBackup = true;
-    }
-
     private async registerHandlers() {
-        commandOutput.on((result) => {
+        this.bds.commandOutput.on((result: string) => {
             if (result === "A previous save has not been completed" || result === "The command is already running") {
-                bedrockServer.executeCommandOnConsole("save resume");
+                this.bds.executeCommandOnConsole("save resume");
             }
 
             if (result === "Saving...") {
-                bedrockServer.executeCommandOnConsole("save query");
+                this.bds.executeCommandOnConsole("save query");
             }
 
             if (result.indexOf("Data saved. Files are now ready to be copied.") > -1) {
@@ -93,7 +79,7 @@ export default class BackupManager {
             }
         });
 
-        bedrockServer.bedrockLog.on((result) => {
+        this.bds.bedrockLog.on((result: string | string[]) => {
             if (result.indexOf("Player connected") > -1) {
                 this.activePlayerCount++;
                 this.runNextBackup = true;
@@ -112,32 +98,23 @@ export default class BackupManager {
                 }
             }
         });
-
-        command.hook.on((command, originName) => {
-            if (command.startsWith("/backup")) {
-                console.log("Backup command triggered");
-                this.runNextBackup = true;
-                this.backup();
-                return 0;
-            }
-        });
     }
 
     private async runBackup(files: string[]) {
-        if (!!this.testOnly){
-            bedrockServer.executeCommandOnConsole("save resume");
+        if (this.testOnly) {
+            this.bds.executeCommandOnConsole("save resume");
             return;
         }
 
         const handleError = (error?: string) => {
             error && console.log(error);
             this.runNextBackup = true;
-            bedrockServer.executeCommandOnConsole("save resume");
+            this.bds.executeCommandOnConsole("save resume");
         };
 
         this.runNextBackup = false;
         this.displayStatus("Starting...");
-        const tempDirectory = await BackupUtils.createTempDirectory(this.worldName, handleError);
+        const tempDirectory = await BackupUtils.createTempDirectory(this.worldName, handleError, this.tempName);
         await BackupUtils.moveFiles(tempDirectory, this.worldName, handleError);
         await Promise.all(
             files.slice(1).map(async (file) => {
@@ -147,7 +124,7 @@ export default class BackupManager {
         await BackupUtils.zipDirectory(tempDirectory, this.worldName, handleError);
         await BackupUtils.removeTempDirectory(tempDirectory);
 
-        bedrockServer.executeCommandOnConsole("save resume");
+        this.bds.executeCommandOnConsole("save resume");
         this.lastBackup = new Date();
         console.log("Finished");
         setTimeout(() => {
@@ -157,7 +134,8 @@ export default class BackupManager {
 
     private displayStatus = (message: string) => {
         if (this.activePlayerCount > 0) {
-            bedrockServer.executeCommandOnConsole(`tellraw @a {\"rawtext\": [{\"text\": \"§lBackup\"},{\"text\": \"§r ${message}\"}]}`);
+            // eslint-disable-next-line no-useless-escape
+            this.bds.executeCommandOnConsole(`tellraw @a {\"rawtext\": [{\"text\": \"§lBackup\"},{\"text\": \"§r ${message}\"}]}`);
         }
     };
 }

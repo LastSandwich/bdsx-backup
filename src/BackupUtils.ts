@@ -1,17 +1,22 @@
-import { basename, join } from "path";
 import { promises as fsp } from "fs";
 import * as fs from "fs";
-import * as ncp from "ncp";
-import * as AdmZip from "adm-zip";
+import { basename, join } from "path";
 import { promisify } from "util";
+
+import * as AdmZip from "adm-zip";
+import * as ncp from "ncp";
 
 export default class BackupUtils {
     public static async getWorldName(): Promise<string> {
-        return await fsp.readFile("server.properties", "utf8").then((data) => {
-            const reg = /^level-name=(.+)/igm;
-            let matches = (data.match(reg) || []).map(e => e.replace(reg, '$1'));
+        return BackupUtils.readFile("server.properties").then((data) => {
+            const reg = /^level-name=(.+)/gim;
+            const matches = (data.match(reg) || []).map((e) => e.replace(reg, "$1"));
             return matches ? matches[0].trim() : "Unknown";
         });
+    }
+
+    public static async readFile(path: string): Promise<string> {
+        return await fsp.readFile(path, "utf8");
     }
 
     public static async removeDirectory(path: string): Promise<any> {
@@ -38,10 +43,9 @@ export default class BackupUtils {
         });
     }
 
-    public static async directoryExists (filePath: string): Promise<boolean> {
-        return new Promise<boolean>(async (resolve) => {
-            await fsp
-                .access(filePath)
+    public static async directoryExists(filePath: string): Promise<boolean> {
+        return new Promise<boolean>((resolve) => {
+            fsp.access(filePath)
                 .then(() => {
                     resolve(true);
                 })
@@ -49,7 +53,7 @@ export default class BackupUtils {
                     resolve(false);
                 });
         });
-    };
+    }
 
     private static ensureDirectoryExists = async (filePath: string, handleError: (error?: string) => void) => {
         if (!(await BackupUtils.directoryExists(filePath))) {
@@ -61,7 +65,7 @@ export default class BackupUtils {
         }
     };
 
-    public static async createTempDirectory(worldName: string, handleError: (error?: string) => void): Promise<string> {
+    public static async createTempDirectory(worldName: string, handleError: (error?: string) => void, tempName?: string): Promise<string> {
         const now = new Date();
         const addLeadingZero = (value: number) => {
             return `0${value}`.slice(-2);
@@ -72,7 +76,7 @@ export default class BackupUtils {
         };
 
         const timeStamp = [now.getFullYear(), addLeadingZero(now.getMonth() + 1), addLeadingZero(now.getDate()), getTime(now)].join("-");
-        const directory = `temp/${timeStamp}`;
+        const directory = tempName ? `temp/${tempName}` : `temp/${timeStamp}`;
         await BackupUtils.ensureDirectoryExists(`${directory}/${worldName}`, handleError);
         return directory;
     }
