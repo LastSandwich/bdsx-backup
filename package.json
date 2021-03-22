@@ -1,7 +1,7 @@
 {
     "bdsxPlugin": true,
     "name": "@bdsx/backup",
-    "version": "1.0.8",
+    "version": "1.0.14",
     "description": "Plugin to back up Bdsx Bedrock Minecraft servers",
     "main": "index.js",
     "types": "index.d.ts",
@@ -24,12 +24,12 @@
     },
     "dependencies": {
         "adm-zip": "^0.5.3",
-        "ncp": "^2.0.0"
+        "ncp": "^2.0.0",
+        "@types/adm-zip": "^0.4.33",
+        "@types/ncp": "^2.0.4"
     },
     "devDependencies": {
-        "@types/adm-zip": "^0.4.33",
         "@types/jest": "^26.0.20",
-        "@types/ncp": "^2.0.4",
         "@types/node": "~12.19.11",
         "@types/unzipper": "^0.10.3",
         "@typescript-eslint/eslint-plugin": "^4.14.1",
