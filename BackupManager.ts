@@ -61,8 +61,9 @@ export class BackupManager {
 
     private async registerHandlers() {
         this.bds.commandOutput.on((result: string) => {
-            if (result === "A previous save has not been completed" || result === "The command is already running") {
+            if (result.indexOf("A previous save") > -1 || result.indexOf("The command is already running") > -1) {
                 this.bds.executeCommandOnConsole("save resume");
+                this.runNextBackup = true;
             }
 
             if (result === "Saving...") {

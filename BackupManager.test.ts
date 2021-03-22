@@ -95,6 +95,16 @@ describe("BackupManager", () => {
         mock.verify((instance) => instance.executeCommandOnConsole("save hold"), Times.Once());
     });
 
+    test("Backup resets and tries again if backup fails", async () => {
+        const mock = createMock();
+        const backupManager = createBackupManager(mock.object(), true);
+        await backupManager.init({ backupOnStart: false, skipIfNoActivity: true });
+        mockCommandOutputEvents.fire("The command is already running", "test");
+        mock.verify((instance) => instance.executeCommandOnConsole("save resume"), Times.Once());
+        backupManager.backup();
+        mock.verify((instance) => instance.executeCommandOnConsole("save hold"), Times.Once());
+    });
+
     test("Backup always runs with skipIfNoActivity=false", async () => {
         const mock = createMock();
         const backupManager = createBackupManager(mock.object(), true);
