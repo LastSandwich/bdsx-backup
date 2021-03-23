@@ -52,7 +52,12 @@ describe("BackupManager", () => {
     test("Backup does not run when user connects with backupOnPlayerConnected=false and backupOnPlayerDisconnected=false", async () => {
         const mock = createMock();
         const backupManager = createBackupManager(mock.object(), true);
-        await backupManager.init({ backupOnStart: false, skipIfNoActivity: true, backupOnPlayerConnected: false, backupOnPlayerDisconnected: false });
+        await backupManager.init({
+            backupOnStart: false,
+            skipIfNoActivity: true,
+            backupOnPlayerConnected: false,
+            backupOnPlayerDisconnected: false,
+        });
 
         mockBedrockLogEvents.fire("Player connected", "test");
         mockBedrockLogEvents.fire("Player disconnected", "test");
@@ -70,7 +75,12 @@ describe("BackupManager", () => {
     test("Backup run when user connects with backupOnPlayerConnected=false and backupOnPlayerDisconnected=true", async () => {
         const mock = createMock();
         const backupManager = createBackupManager(mock.object(), true);
-        await backupManager.init({ backupOnStart: false, skipIfNoActivity: true, backupOnPlayerConnected: false, backupOnPlayerDisconnected: true });
+        await backupManager.init({
+            backupOnStart: false,
+            skipIfNoActivity: true,
+            backupOnPlayerConnected: false,
+            backupOnPlayerDisconnected: true,
+        });
         mockBedrockLogEvents.fire("Player connected", "test");
         mockBedrockLogEvents.fire("Player disconnected", "test");
         mock.verify((instance) => instance.executeCommandOnConsole("save hold"), Times.Once());
@@ -79,7 +89,12 @@ describe("BackupManager", () => {
     test("Backup runs next backup after play connects or disconnects", async () => {
         const mock = createMock();
         const backupManager = createBackupManager(mock.object(), true);
-        await backupManager.init({ backupOnStart: false, skipIfNoActivity: true, backupOnPlayerConnected: true, backupOnPlayerDisconnected: true });
+        await backupManager.init({
+            backupOnStart: false,
+            skipIfNoActivity: true,
+            backupOnPlayerConnected: true,
+            backupOnPlayerDisconnected: true,
+        });
 
         mockBedrockLogEvents.fire("Player connected", "test");
         mock.verify((instance) => instance.executeCommandOnConsole("save hold"), Times.Once());
@@ -96,11 +111,14 @@ describe("BackupManager", () => {
     });
 
     test("Backup resets and tries again if backup fails", async () => {
+        jest.useFakeTimers();
         const mock = createMock();
         const backupManager = createBackupManager(mock.object(), true);
         await backupManager.init({ backupOnStart: false, skipIfNoActivity: true });
         mockCommandOutputEvents.fire("The command is already running", "test");
+        jest.runOnlyPendingTimers();
         mock.verify((instance) => instance.executeCommandOnConsole("save resume"), Times.Once());
+        jest.useRealTimers();
         backupManager.backup();
         mock.verify((instance) => instance.executeCommandOnConsole("save hold"), Times.Once());
     });
@@ -140,7 +158,7 @@ describe("BackupManager", () => {
             mock.verify((instance) => instance.executeCommandOnConsole("tellraw @a {\"rawtext\": [{\"text\": \"§lBackup\"},{\"text\": \"§r Finished!\"}]}"), Times.Once());
         }, 2500);
 
-        const testFile = await extractFromZip("backups/testing_WorldName123.zip", "backups/test.txt");
+        const testFile = await extractFromZip("bedrock_server/backups/testing_WorldName123.zip", "bedrock_server/backups/test.txt");
         expect(testFile).toHaveLength(6);
         jest.useRealTimers();
     });

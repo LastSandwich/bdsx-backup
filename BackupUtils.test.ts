@@ -6,7 +6,7 @@ describe("Backup Utils", () => {
     };
 
     test("Can get world name from server.properties", async () => {
-        const worldName = await BackupUtils.getWorldName();
+        const worldName = await BackupUtils.getWorldName("./bedrock_server");
         expect(worldName).toBe("WorldName123");
     });
 

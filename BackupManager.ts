@@ -7,14 +7,21 @@ export class BackupManager {
     private worldName = "Unknown";
     private activePlayerCount = 0;
     private runNextBackup = false;
-    private lastBackup = new Date(0, 0, 0);
+    private lastBackup = 0;
     private backupSettings: IBackupSettings = {};
+    private bedrockServerPath: string;
+    private resumeRetryCounter = 0;
 
     constructor(private bds: typeof bedrockServer, private testOnly?: boolean, private tempName?: string) {}
 
     public async init(settings: IBackupSettings): Promise<void> {
         this.backupSettings = settings;
-        this.worldName = await BackupUtils.getWorldName();
+        this.bedrockServerPath = settings.bedrockServerPath ?? ".";
+        this.worldName = await BackupUtils.getWorldName(this.bedrockServerPath);
+
+        console.log("bedrockServerPath:", this.bedrockServerPath);
+        console.log("worldName:", this.worldName);
+
         if (!this.testOnly) {
             await BackupUtils.removeDirectory("temp");
         }
@@ -37,7 +44,7 @@ export class BackupManager {
 
     public async backup(): Promise<void> {
         if (this.backupSettings.minIntervalBetweenBackups) {
-            let diffTime = Math.abs(Date.now() - this.lastBackup.valueOf()) / 1000 / 60;
+            let diffTime = Math.abs(Date.now() - this.lastBackup) / 1000 / 60;
             diffTime = Math.round(diffTime * 100) / 100;
             console.log(diffTime);
             if (diffTime < this.backupSettings.minIntervalBetweenBackups) {
@@ -62,8 +69,15 @@ export class BackupManager {
     private async registerHandlers() {
         this.bds.commandOutput.on((result: string) => {
             if (result.indexOf("A previous save") > -1 || result.indexOf("The command is already running") > -1) {
-                this.bds.executeCommandOnConsole("save resume");
-                this.runNextBackup = true;
+                this.resumeRetryCounter++;
+                if (this.resumeRetryCounter < 3) {
+                    setTimeout(() => {
+                        this.bds.executeCommandOnConsole("save resume");
+                        this.runNextBackup = true;
+                    }, 1000);
+                } else {
+                    this.resumeRetryCounter = 0;
+                }
             }
 
             if (result === "Saving...") {
@@ -76,7 +90,7 @@ export class BackupManager {
             }
 
             if (result === "Changes to the level are resumed.") {
-                // no action
+                this.resumeRetryCounter = 0;
             }
         });
 
@@ -116,17 +130,17 @@ export class BackupManager {
         this.runNextBackup = false;
         this.displayStatus("Starting...");
         const tempDirectory = await BackupUtils.createTempDirectory(this.worldName, handleError, this.tempName);
-        await BackupUtils.moveFiles(tempDirectory, this.worldName, handleError);
+        await BackupUtils.moveFiles(`${this.bedrockServerPath}/worlds`, tempDirectory, this.worldName, handleError);
         await Promise.all(
             files.slice(1).map(async (file) => {
                 await BackupUtils.truncate(file, tempDirectory);
             })
         );
-        await BackupUtils.zipDirectory(tempDirectory, this.worldName, handleError);
+        await BackupUtils.zipDirectory(`${this.bedrockServerPath}/worlds`, tempDirectory, this.worldName, handleError);
         await BackupUtils.removeTempDirectory(tempDirectory);
 
         this.bds.executeCommandOnConsole("save resume");
-        this.lastBackup = new Date();
+        this.lastBackup = Date.now();
         console.log("Finished");
         setTimeout(() => {
             this.displayStatus("Finished!");

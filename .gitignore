@@ -120,7 +120,8 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-/backups
+bedrock_server/backups/
+temp/
 *.js
 *.js.map
 *.d.ts

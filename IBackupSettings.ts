@@ -5,4 +5,5 @@ export interface IBackupSettings {
     interval?: number;
     minIntervalBetweenBackups?: number;
     skipIfNoActivity?: boolean;
+    bedrockServerPath?: string;
 }

@@ -16,7 +16,8 @@ backupManager.init({
     backupOnPlayerConnected: true,
     backupOnPlayerDisconnected: true,
     interval: 30,
-    minIntervalBetweenBackups: 5
+    minIntervalBetweenBackups: 5,
+    bedrockServerPath: "./bedrock_server"
 }).then((res) => {
     console.log(`backup manager initiated`);
 });
@@ -28,6 +29,7 @@ You can tweak the following settings:
 - backupOnPlayerConnected: run a backup when a player joins
 - backupOnPlayerDisconnected: run a backup when a player leaves
 - minIntervalBetweenBackups: minimum minutes between backups
+- bedrockServerPath: path to the bedrock_server folder
 
 ## How to run
 Next time you restart the Bdsx server the backup manager should start up.

@@ -7,12 +7,17 @@ import * as AdmZip from "adm-zip";
 import * as ncp from "ncp";
 
 export class BackupUtils {
-    public static async getWorldName(): Promise<string> {
-        return BackupUtils.readFile("server.properties").then((data) => {
-            const reg = /^level-name=(.+)/gim;
-            const matches = (data.match(reg) || []).map((e) => e.replace(reg, "$1"));
-            return matches ? matches[0].trim() : "Unknown";
-        });
+    public static async getWorldName(bedrockServerPath: string): Promise<string> {
+        return BackupUtils.readFile(`${bedrockServerPath}/server.properties`)
+            .then((data) => {
+                const reg = /^level-name=(.+)/gim;
+                const matches = (data.match(reg) || []).map((e) => e.replace(reg, "$1"));
+                return matches ? matches[0].trim() : "Unknown";
+            })
+            .catch((err) => {
+                console.log(`Failed to read ${bedrockServerPath}/server.properties ${err}`);
+                return "Unknown";
+            });
     }
 
     public static async readFile(path: string): Promise<string> {
@@ -66,7 +71,7 @@ export class BackupUtils {
     };
 
     public static async createTempDirectory(worldName: string, handleError: (error?: string) => void, tempName?: string): Promise<string> {
-        const now = new Date();
+        const now = new Date(Date.now());
         const addLeadingZero = (value: number) => {
             return `0${value}`.slice(-2);
         };
@@ -95,8 +100,8 @@ export class BackupUtils {
         });
     }
 
-    public static async zipDirectory(tempDirectory: string, worldName: string, handleError: (error?: string) => void): Promise<void> {
-        const destination = `backups/${basename(tempDirectory)}_${worldName}.zip`;
+    public static async zipDirectory(backupsPath: string, tempDirectory: string, worldName: string, handleError: (error?: string) => void): Promise<void> {
+        const destination = `${backupsPath}/${basename(tempDirectory)}_${worldName}.zip`;
         await BackupUtils.ensureDirectoryExists("backups", handleError);
 
         await new Promise<boolean>((resolve) => {
@@ -114,10 +119,10 @@ export class BackupUtils {
         });
     }
 
-    public static async moveFiles(tempDirectory: string, worldName: string, handleError: any): Promise<void> {
+    public static async moveFiles(worldsPath: string, tempDirectory: string, worldName: string, handleError: any): Promise<void> {
         await new Promise<boolean>((resolve) => {
             ncp(
-                `worlds/${worldName}`,
+                `${worldsPath}/${worldName}`,
                 `${tempDirectory}/${worldName}`,
                 {
                     filter: (source) => {
