@@ -136,7 +136,7 @@ export class BackupManager {
                 await BackupUtils.truncate(file, tempDirectory);
             })
         );
-        await BackupUtils.zipDirectory(`${this.bedrockServerPath}/worlds`, tempDirectory, this.worldName, handleError);
+        await BackupUtils.zipDirectory(`${this.bedrockServerPath}/backups`, tempDirectory, this.worldName, handleError);
         await BackupUtils.removeTempDirectory(tempDirectory);
 
         this.bds.executeCommandOnConsole("save resume");
