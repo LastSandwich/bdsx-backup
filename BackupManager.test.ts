@@ -136,7 +136,7 @@ describe("BackupManager", () => {
         jest.useFakeTimers();
         const mock = createMock();
         const backupManager = createBackupManager(mock.object(), false, "testing");
-        await backupManager.init({ backupOnStart: false, skipIfNoActivity: false, backupOnPlayerConnected: true });
+        await backupManager.init({ backupOnStart: false, skipIfNoActivity: false, backupOnPlayerConnected: true, bedrockServerPath: "./bedrock_server" });
         mockBedrockLogEvents.fire("Player connected", "test");
 
         mock.verify((instance) => instance.executeCommandOnConsole("save hold"), Times.Once());

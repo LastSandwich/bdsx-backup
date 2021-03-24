@@ -16,8 +16,7 @@ backupManager.init({
     backupOnPlayerConnected: true,
     backupOnPlayerDisconnected: true,
     interval: 30,
-    minIntervalBetweenBackups: 5,
-    bedrockServerPath: "./bedrock_server"
+    minIntervalBetweenBackups: 5
 }).then((res) => {
     console.log(`backup manager initiated`);
 });
