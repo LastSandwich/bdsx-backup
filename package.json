@@ -1,7 +1,7 @@
 {
     "bdsxPlugin": true,
     "name": "@bdsx/backup",
-    "version": "1.0.17",
+    "version": "1.0.18",
     "description": "Plugin to back up Bdsx Bedrock Minecraft servers",
     "main": "index.js",
     "types": "index.d.ts",
@@ -34,7 +34,7 @@
         "@types/unzipper": "^0.10.3",
         "@typescript-eslint/eslint-plugin": "^4.14.1",
         "@typescript-eslint/parser": "^4.14.1",
-        "bdsx": "file:../bdsx/bdsx",
+        "bdsx": "file:bdsx-stub",
         "eslint": "^7.18.0",
         "eslint-config-prettier": "^7.2.0",
         "eslint-plugin-import": "^2.22.1",

@@ -1,18 +1,21 @@
-import { bedrockServer } from "bdsx";
+import { ServerPlayer } from "bdsx/bds/player";
+import { events } from "bdsx/event";
+import { bedrockServer } from "bdsx/launcher";
 
 import { BackupUtils } from "./BackupUtils";
 import { IBackupSettings } from "./IBackupSettings";
 
 export class BackupManager {
     private worldName = "Unknown";
-    private activePlayerCount = 0;
     private runNextBackup = false;
     private lastBackup = 0;
     private backupSettings: IBackupSettings = {};
     private bedrockServerPath: string;
     private resumeRetryCounter = 0;
 
-    constructor(private bds: typeof bedrockServer, private testOnly?: boolean, private tempName?: string) {}
+    private actorList: ServerPlayer[] = [];
+
+    constructor(private bds: typeof bedrockServer, private evt: typeof events, private testOnly?: boolean, private tempName?: string) {}
 
     public async init(settings: IBackupSettings): Promise<void> {
         this.backupSettings = settings;
@@ -54,7 +57,7 @@ export class BackupManager {
         }
 
         if (this.backupSettings.skipIfNoActivity) {
-            if (this.activePlayerCount > 0 || this.runNextBackup) {
+            if (this.actorList.length > 0 || this.runNextBackup) {
                 console.log("Call save hold due to activity");
                 this.bds.executeCommandOnConsole("save hold");
             } else {
@@ -67,7 +70,7 @@ export class BackupManager {
     }
 
     private async registerHandlers() {
-        this.bds.commandOutput.on((result: string) => {
+        this.evt.commandOutput.on((result: string) => {
             if (result.indexOf("A previous save") > -1 || result.indexOf("The command is already running") > -1) {
                 this.resumeRetryCounter++;
                 if (this.resumeRetryCounter < 3) {
@@ -89,25 +92,29 @@ export class BackupManager {
                 this.runBackup(files);
             }
 
-            if (result === "Changes to the level are resumed.") {
+            if (result === "Changes to the level are resumed." || result === "Changes to the world are resumed.") {
                 this.resumeRetryCounter = 0;
             }
         });
 
-        this.bds.bedrockLog.on((result: string | string[]) => {
-            if (result.indexOf("Player connected") > -1) {
-                this.activePlayerCount++;
-                this.runNextBackup = true;
+        this.evt.playerJoin.on((e) => {
+            const actor = e.player.getNetworkIdentifier().getActor();
+            if (actor !== null) {
+                this.actorList.push(actor);
 
+                this.runNextBackup = true;
                 if (this.backupSettings.backupOnPlayerConnected) {
                     this.backup();
                 }
             }
+        });
 
-            if (result.indexOf("Player disconnected") > -1) {
-                this.activePlayerCount = this.activePlayerCount > 0 ? this.activePlayerCount - 1 : 0;
+        this.evt.networkDisconnected.on((netId) => {
+            const actor = netId.getActor()?.getNetworkIdentifier().getActor();
+            if (actor) {
+                this.actorList.splice(this.actorList.findIndex(() => actor));
+
                 this.runNextBackup = true;
-
                 if (this.backupSettings.backupOnPlayerDisconnected) {
                     this.backup();
                 }
@@ -148,7 +155,7 @@ export class BackupManager {
     }
 
     private displayStatus = (message: string) => {
-        if (this.activePlayerCount > 0) {
+        if (this.actorList.length > 0) {
             // eslint-disable-next-line no-useless-escape
             this.bds.executeCommandOnConsole(`tellraw @a {\"rawtext\": [{\"text\": \"§lBackup\"},{\"text\": \"§r ${message}\"}]}`);
         }

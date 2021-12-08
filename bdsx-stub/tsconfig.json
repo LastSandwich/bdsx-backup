@@ -1,0 +1,27 @@
+{
+    "bundlerOptions": {
+        "clearConsole": true,
+        "checkCircularDependency": true,
+        "suppressDynamicImportErrors": true,
+        "faster": true
+    },
+    "compilerOptions": {
+        "baseUrl": ".",
+        "declaration": true,
+        "target": "es2017",
+        "lib": ["es2017"],
+        "module": "CommonJS",
+        "moduleResolution": "Node",
+        "alwaysStrict": true,
+        "noImplicitAny": true,
+        "strictNullChecks": true,
+        "noImplicitThis": true,
+        "resolveJsonModule": true,
+        "sourceMap": true,
+        "experimentalDecorators": true,
+        "paths": {
+            "bdsx/*": ["./bdsx/*"]
+        }
+    },
+    "exclude": ["node_modules", "dist", "backups", "temp", "worlds", "../bdsx", "./**/*.test.ts"]
+}
