@@ -33,7 +33,9 @@ export namespace bedrockServer {
         });
     }
 
-    export function executeCommandOnConsole(command: string): void {}
+    export function executeCommandOnConsole(command: string): void {
+        // this method is empty
+    }
 
     export function executeCommand(command: string, mute = true, permissionLevel = 4, dimension: Dimension | null = null): MCRESULT {
         return {} as any;

@@ -1,7 +1,9 @@
 /.git
 !*.d.ts
 /.idea
+/bdsx-stub
 /backups
+/bedrock_server
 /temp
 /worlds
 .eslintignore

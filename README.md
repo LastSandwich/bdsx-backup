@@ -3,20 +3,22 @@ Backup manager for Minecraft worlds running on [Bdsx](https://github.com/bdsx/bd
 
 ## How to install
 
-1. In your Bdsx installation folder, open a terminal and run `npm i @bdsx/backup`
-2. Insert this code in your index.ts file:
+1. From your Bdsx installation folder, run `plugin-manager.bat` on Windows or `plugin-manager.sh` on Linux
+2. Choose `@bdsx/backup` and press `Enter` to install
+3. Insert this code in your index.ts file:
 ````
-import { BackupManager } from "@bdsx/backup";
 import { bedrockServer } from "bdsx/launcher";
+import { events } from "bdsx/event";
+import { BackupManager } from "@bdsx/backup/BackupManager";
 
-const backupManager = new BackupManager(bedrockServer);
+const backupManager = new BackupManager(bedrockServer, events);
 backupManager.init({
     backupOnStart: true,
     skipIfNoActivity: true,
     backupOnPlayerConnected: true,
     backupOnPlayerDisconnected: true,
     interval: 30,
-    minIntervalBetweenBackups: 5
+    minIntervalBetweenBackups: 5,
 }).then((res) => {
     console.log(`backup manager initiated`);
 });
